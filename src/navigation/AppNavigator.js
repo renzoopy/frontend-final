@@ -12,6 +12,7 @@ import ListProviders from '../modules/providers/screens/ListProviders';
 import AddProvider from '../modules/providers/screens/AddProvider';
 import ProviderDetail from '../modules/providers/screens/ProviderDetail';
 import ReceptionScreen from '../modules/receptions/screens/ReceptionScreen';
+import ReceptionDetail from '../modules/receptions/screens/ReceptionDetail';
 import ListProducts from '../modules/products/screens/ListProducts';
 import AddProduct from '../modules/products/screens/AddProduct';
 import ProductDetail from '../modules/products/screens/ProductDetail';
@@ -20,7 +21,6 @@ import AddCage from '../modules/cages/screens/AddCage';
 import CageDetail from '../modules/cages/screens/CageDetail';
 import ListReservations from '../modules/reservations/screens/ListReservations';
 import AddReservation from '../modules/reservations/screens/AddReservation';
-import ReservationDetail from '../modules/reservations/screens/ReservationDetail';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -43,7 +43,7 @@ const AppNavigator = () => {
             </DrawerContentScrollView>
           </View>
         )}>
-        <Drawer.Screen name="Recepción" component={ReceptionScreen} />
+        <Drawer.Screen name="Recepción" component={ReceptionStack} />
         <Drawer.Screen name="Proveedores" component={ProvidersStack} />
         <Drawer.Screen name="Productos" component={ProductsStack} />
         <Drawer.Screen name="Jaulas" component={CagesStack} />
@@ -137,9 +137,27 @@ const ReservationsStack = () => {
         options={{title: 'Agregar Reserva'}}
       />
       <Stack.Screen
-        name="ReservationDetail"
-        component={ReservationDetail}
-        options={{title: 'Detalles de la Reserva'}}
+        name="ReceptionDetail"
+        component={ReceptionDetail}
+        options={{title: 'Detalles de la Recepción'}}
+      />
+    </Stack.Navigator>
+  );
+};
+
+// Navegación para las recepciones
+const ReceptionStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ReceptionScreen"
+        component={ReceptionScreen}
+        options={{title: 'Recepción'}}
+      />
+      <Stack.Screen
+        name="ReceptionDetail"
+        component={ReceptionDetail}
+        options={{title: 'Detalles de la Recepción'}}
       />
     </Stack.Navigator>
   );
