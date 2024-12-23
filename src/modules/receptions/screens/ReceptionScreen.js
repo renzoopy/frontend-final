@@ -7,6 +7,7 @@ import {
   Button,
   Alert,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import {
   getCages,
@@ -15,16 +16,35 @@ import {
   updateReservation,
 } from '../../../services/Api';
 import moment from 'moment';
+import {Calendar} from 'react-native-calendars';
 
 const ReceptionScreen = ({navigation}) => {
   const [reservations, setReservations] = useState([]);
+  const [filteredReservations, setFilteredReservations] = useState([]);
   const [cages, setCages] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
   useEffect(() => {
     // Cargar reservas y jaulas
     loadReservations();
     loadCages();
   }, []);
+
+  useEffect(() => {
+    // Filtrar reservas cuando se seleccione una fecha
+    if (selectedDate) {
+      const filtered = reservations.filter(reservation =>
+        moment(reservation.date, 'DD/MM/YYYY').isSame(
+          moment(selectedDate, 'YYYY-MM-DD'),
+          'day',
+        ),
+      );
+      setFilteredReservations(filtered);
+    } else {
+      setFilteredReservations(reservations);
+    }
+  }, [selectedDate, reservations]);
 
   const loadReservations = async () => {
     const data = await getReservations();
@@ -43,14 +63,12 @@ const ReceptionScreen = ({navigation}) => {
       return;
     }
 
-    // Actualizar el turno con la hora de inicio de recepción
     const updatedReservation = {
       ...reservation,
       startTimeReception: moment().format('HH:mm'),
     };
     updateReservation(updatedReservation);
 
-    // Marcar la jaula como en uso
     const updatedCage = {...availableCage, inUse: 'S'};
     updateCage(updatedCage);
 
@@ -59,14 +77,12 @@ const ReceptionScreen = ({navigation}) => {
   };
 
   const finishReception = reservation => {
-    // Actualizar el turno con la hora de fin de recepción
     const updatedReservation = {
       ...reservation,
       endTimeReception: moment().format('HH:mm'),
     };
     updateReservation(updatedReservation);
 
-    // Liberar la jaula
     const cageToFree = cages.find(cage => cage.id === reservation.cage);
     const updatedCage = {...cageToFree, inUse: 'N'};
     updateCage(updatedCage);
@@ -97,10 +113,6 @@ const ReceptionScreen = ({navigation}) => {
           borderColor: '#ccc',
         }}
         onPress={() => {
-          console.log('Navigating to ReceptionDetail', {
-            reservation: item,
-            cages,
-          });
           navigation.navigate('ReceptionDetail', {reservation: item, cages});
         }}>
         <Text>Inicio Agendamiento: {item.startTimeScheduled}</Text>
@@ -128,12 +140,103 @@ const ReceptionScreen = ({navigation}) => {
     );
   };
 
+  const openCalendar = () => setIsCalendarVisible(true);
+  const closeCalendar = () => setIsCalendarVisible(false);
+
+  const handleDateChange = day => {
+    setSelectedDate(day.dateString);
+    closeCalendar();
+  };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingRight: 10,
+          }}>
+          <TouchableOpacity
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              backgroundColor: '#f0f0f0',
+              borderRadius: 5,
+            }}
+            onPress={() => setIsCalendarVisible(true)}>
+            <Text style={{color: '#007AFF'}}>
+              {selectedDate
+                ? moment(selectedDate).format('DD/MM/YYYY')
+                : 'Filtrar'}
+            </Text>
+          </TouchableOpacity>
+
+          {selectedDate && (
+            <TouchableOpacity
+              style={{
+                marginLeft: 10,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                backgroundColor: '#f8d7da',
+                borderRadius: 5,
+              }}
+              onPress={() => {
+                setSelectedDate('');
+                setFilteredReservations(reservations); // Mostrar todas las reservas
+              }}>
+              <Text style={{color: '#721c24'}}>Borrar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ),
+    });
+  }, [navigation, selectedDate, reservations]);
+
   return (
-    <FlatList
-      data={reservations}
-      renderItem={renderReservationItem}
-      keyExtractor={item => item.id}
-    />
+    <View style={{flex: 1}}>
+      <FlatList
+        data={filteredReservations}
+        renderItem={renderReservationItem}
+        keyExtractor={item => item.id}
+      />
+
+      {isCalendarVisible && (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={isCalendarVisible}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+            }}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 10,
+                padding: 20,
+                width: '90%',
+                elevation: 5,
+              }}>
+              <Calendar
+                onDayPress={handleDateChange}
+                markedDates={{
+                  [selectedDate]: {selected: true, selectedColor: 'blue'},
+                }}
+              />
+              <TouchableOpacity
+                style={{marginTop: 10, alignItems: 'center'}}
+                onPress={closeCalendar}>
+                <Text style={{color: 'blue', fontWeight: 'bold'}}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
   );
 };
 

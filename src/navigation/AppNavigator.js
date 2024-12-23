@@ -136,11 +136,6 @@ const ReservationsStack = () => {
         component={AddReservation}
         options={{title: 'Agregar Reserva'}}
       />
-      <Stack.Screen
-        name="ReceptionDetail"
-        component={ReceptionDetail}
-        options={{title: 'Detalles de la Recepción'}}
-      />
     </Stack.Navigator>
   );
 };
