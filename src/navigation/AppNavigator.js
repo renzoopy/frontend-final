@@ -2,6 +2,11 @@ import React from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+import {View, Text, StyleSheet} from 'react-native';
+import {
+  DrawerContentScrollView,
+  DrawerItemList,
+} from '@react-navigation/drawer';
 
 import ListProviders from '../modules/providers/screens/ListProviders';
 import AddProvider from '../modules/providers/screens/AddProvider';
@@ -23,7 +28,21 @@ const Drawer = createDrawerNavigator();
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Recepción">
+      <Drawer.Navigator
+        initialRouteName="Recepción"
+        drawerContent={props => (
+          <View style={{flex: 1}}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.headerText}>Agendamientos</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <DrawerContentScrollView {...props}>
+              <DrawerItemList {...props} />
+            </DrawerContentScrollView>
+          </View>
+        )}>
         <Drawer.Screen name="Recepción" component={ReceptionScreen} />
         <Drawer.Screen name="Proveedores" component={ProvidersStack} />
         <Drawer.Screen name="Productos" component={ProductsStack} />
@@ -125,5 +144,21 @@ const ReservationsStack = () => {
     </Stack.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'gray',
+    marginVertical: 10,
+  },
+});
 
 export default AppNavigator;
